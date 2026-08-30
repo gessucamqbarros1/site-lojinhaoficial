@@ -18,49 +18,26 @@ const Checkout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ name: '', email: '', phone: '', address: '', notes: '' });
-  const [couponCode, setCouponCode] = useState('');
-  const [couponPercent, setCouponPercent] = useState(0);
-  const [validating, setValidating] = useState(false);
+  // `orders.user_id` is required by the database, so checkout always needs a
+  // logged-in user; name/phone/address/notes aren't stored (the `orders`
+  // table only tracks user_id/status/total_amount) but are kept here to
+  // build the WhatsApp handoff message the store actually uses to fulfill.
+  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
   const [submitting, setSubmitting] = useState(false);
   const [website, setWebsite] = useState(''); // honeypot: humans never fill this
   const formOpenedAt = useRef(Date.now());
 
-  const discount = (subtotal * couponPercent) / 100;
-  const total = Math.max(subtotal - discount, 0);
-
-  // NOTE: coupon validity is checked here, but the resulting discount/total
-  // is still trusted from the client when the order is inserted below. A
-  // user can bypass this check via devtools. Closing that gap requires a
-  // server-side RPC (e.g. validate_coupon) or a BEFORE INSERT trigger on
-  // `orders` that recomputes discount/total from `coupon_code` — tracked
-  // as a follow-up alongside the Supabase schema reconciliation.
-  const applyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    setValidating(true);
-    const { data, error } = await supabase
-      .from('coupons')
-      .select('*')
-      .eq('code', couponCode.trim().toUpperCase())
-      .eq('active', true)
-      .maybeSingle();
-    setValidating(false);
-
-    const expired = data?.expires_at ? new Date(data.expires_at) < new Date() : false;
-    const exhausted = data?.max_uses != null && data.used_count >= data.max_uses;
-
-    if (error || !data || expired || exhausted) {
-      setCouponPercent(0);
-      toast({ title: 'Cupom inválido', description: 'Verifique o código e tente novamente.', variant: 'destructive' });
-      return;
-    }
-    setCouponPercent(data.discount_percentage);
-    toast({ title: 'Cupom aplicado', description: `${data.discount_percentage}% de desconto.` });
-  };
+  const total = subtotal;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
+
+    if (!user) {
+      toast({ title: 'Faça login para continuar', description: 'Você precisa de uma conta para finalizar o pedido.', variant: 'destructive' });
+      navigate('/login', { state: { from: { pathname: '/checkout' } } });
+      return;
+    }
 
     // Anti-spam: honeypot field filled, or form submitted implausibly fast.
     if (website.trim() !== '' || Date.now() - formOpenedAt.current < 1500) {
@@ -72,16 +49,9 @@ const Checkout = () => {
       const { data: order, error } = await supabase
         .from('orders')
         .insert({
-          user_id: user?.id ?? null,
-          customer_name: form.name,
-          customer_email: form.email || null,
-          customer_phone: form.phone || null,
-          address: form.address || null,
-          notes: form.notes || null,
-          subtotal,
-          discount,
-          total,
-          coupon_code: couponPercent > 0 ? couponCode.trim().toUpperCase() : null,
+          user_id: user.id,
+          status: 'pending',
+          total_amount: total,
         })
         .select()
         .single();
@@ -91,8 +61,7 @@ const Checkout = () => {
       const { error: itemsError } = await supabase.from('order_items').insert(
         items.map((i) => ({
           order_id: order.id,
-          product_id: i.id,
-          product_name: i.name,
+          product_id: Number(i.id),
           unit_price: i.price,
           quantity: i.quantity,
         }))
@@ -108,7 +77,13 @@ const Checkout = () => {
         .maybeSingle();
 
       const lines = items.map((i) => `• ${i.quantity}x ${i.name} — ${formatBRL(i.price * i.quantity)}`).join('\n');
-      const message = `Olá! Fiz um pedido no site.\n\nPedido: ${order.id.slice(0, 8)}\nNome: ${form.name}\n\n${lines}\n\nSubtotal: ${formatBRL(subtotal)}\nDesconto: ${formatBRL(discount)}\nTotal: ${formatBRL(total)}`;
+      const contactLines = [
+        form.name && `Nome: ${form.name}`,
+        form.phone && `Telefone: ${form.phone}`,
+        form.address && `Endereço: ${form.address}`,
+        form.notes && `Observações: ${form.notes}`,
+      ].filter(Boolean).join('\n');
+      const message = `Olá! Fiz um pedido no site.\n\nPedido: #${order.id}\n${contactLines}\n\n${lines}\n\nTotal: ${formatBRL(total)}`;
 
       clear();
       toast({ title: 'Pedido enviado!', description: 'Vamos confirmar os detalhes com você.' });
@@ -116,7 +91,7 @@ const Checkout = () => {
       if (settings?.whatsapp_number) {
         window.open(`https://wa.me/${settings.whatsapp_number}?text=${encodeURIComponent(message)}`, '_blank');
       }
-      navigate('/orders');
+      navigate('/account');
     } catch (err) {
       console.error(err);
       toast({ title: 'Erro ao finalizar', description: 'Tente novamente em instantes.', variant: 'destructive' });
@@ -155,13 +130,17 @@ const Checkout = () => {
                     onChange={(e) => setWebsite(e.target.value)}
                   />
                 </div>
+                {!user && (
+                  <p className="text-sm text-vintage-dark/70 bg-vintage-beige/20 rounded-md p-3">
+                    Você precisa estar logado para finalizar o pedido.{' '}
+                    <Link to="/login" state={{ from: { pathname: '/checkout' } }} className="text-vintage-brown underline">
+                      Entrar ou criar conta
+                    </Link>
+                  </p>
+                )}
                 <div>
                   <Label htmlFor="name">Nome completo *</Label>
                   <Input id="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                </div>
-                <div>
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </div>
                 <div>
                   <Label htmlFor="phone">Telefone / WhatsApp</Label>
@@ -191,20 +170,7 @@ const Checkout = () => {
                   ))}
                 </ul>
 
-                <div className="flex gap-2 mb-4">
-                  <Input
-                    placeholder="Cupom de desconto"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                  />
-                  <Button type="button" variant="secondary" onClick={applyCoupon} disabled={validating}>
-                    Aplicar
-                  </Button>
-                </div>
-
                 <div className="space-y-1 text-sm border-t border-vintage-beige/30 pt-3">
-                  <div className="flex justify-between"><span>Subtotal</span><span>{formatBRL(subtotal)}</span></div>
-                  <div className="flex justify-between"><span>Desconto</span><span>-{formatBRL(discount)}</span></div>
                   <div className="flex justify-between font-semibold text-base pt-1"><span>Total</span><span>{formatBRL(total)}</span></div>
                 </div>
               </aside>
