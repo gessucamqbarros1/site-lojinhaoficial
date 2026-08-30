@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -23,10 +23,18 @@ const Checkout = () => {
   const [couponPercent, setCouponPercent] = useState(0);
   const [validating, setValidating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [website, setWebsite] = useState(''); // honeypot: humans never fill this
+  const formOpenedAt = useRef(Date.now());
 
   const discount = (subtotal * couponPercent) / 100;
   const total = Math.max(subtotal - discount, 0);
 
+  // NOTE: coupon validity is checked here, but the resulting discount/total
+  // is still trusted from the client when the order is inserted below. A
+  // user can bypass this check via devtools. Closing that gap requires a
+  // server-side RPC (e.g. validate_coupon) or a BEFORE INSERT trigger on
+  // `orders` that recomputes discount/total from `coupon_code` — tracked
+  // as a follow-up alongside the Supabase schema reconciliation.
   const applyCoupon = async () => {
     if (!couponCode.trim()) return;
     setValidating(true);
@@ -53,6 +61,12 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
+
+    // Anti-spam: honeypot field filled, or form submitted implausibly fast.
+    if (website.trim() !== '' || Date.now() - formOpenedAt.current < 1500) {
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { data: order, error } = await supabase
@@ -129,6 +143,18 @@ const Checkout = () => {
           ) : (
             <div className="grid gap-8 md:grid-cols-2">
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Honeypot: hidden from real users, bots tend to fill every field */}
+                <div className="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
+                  <Label htmlFor="website">Não preencha este campo</Label>
+                  <Input
+                    id="website"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </div>
                 <div>
                   <Label htmlFor="name">Nome completo *</Label>
                   <Input id="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
