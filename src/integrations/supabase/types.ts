@@ -122,7 +122,6 @@ export type Database = {
           created_at: string
           id: number
           status: string
-          stripe_session_id: string | null
           total_amount: number
           user_id: string
         }
@@ -130,7 +129,6 @@ export type Database = {
           created_at?: string
           id?: number
           status?: string
-          stripe_session_id?: string | null
           total_amount: number
           user_id: string
         }
@@ -138,7 +136,6 @@ export type Database = {
           created_at?: string
           id?: number
           status?: string
-          stripe_session_id?: string | null
           total_amount?: number
           user_id?: string
         }
