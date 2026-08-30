@@ -3,19 +3,21 @@ import { Save, Trash2 } from 'lucide-react';
 import { Product } from '@/components/ui/ProductCard';
 import { supabase } from '@/integrations/supabase/client';
 import { deleteProductImage } from '@/lib/fileUploader';
+import { StoreData } from '@/hooks/useAdminData';
+import { ToastFn } from '@/hooks/use-toast';
 
 interface BackupTabProps {
-  storeData: any;
+  storeData: StoreData;
   productList: Product[];
   setProductList: (products: Product[]) => void;
-  setStoreData: (data: any) => void;
+  setStoreData: (data: StoreData) => void;
   fetchProducts: () => Promise<void>;
   fetchStoreSettings: () => Promise<void>;
   saving: boolean;
   setSaving: (saving: boolean) => void;
   deleting: boolean;
   setDeleting: (deleting: boolean) => void;
-  toast: any;
+  toast: ToastFn;
 }
 
 const BackupTab: React.FC<BackupTabProps> = ({

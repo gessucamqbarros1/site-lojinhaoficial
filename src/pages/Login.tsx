@@ -19,7 +19,8 @@ const Login = () => {
   // Se já estiver logado, redireciona
   React.useEffect(() => {
     if (user) {
-      const from = (location.state as any)?.from?.pathname || '/account';
+      const state = location.state as { from?: { pathname?: string } } | null;
+      const from = state?.from?.pathname || '/account';
       navigate(from, { replace: true });
     }
   }, [user, navigate, location]);

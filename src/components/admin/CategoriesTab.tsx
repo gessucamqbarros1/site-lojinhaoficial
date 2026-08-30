@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit3, Check, X } from 'lucide-react';
+import { ToastFn } from '@/hooks/use-toast';
 
 interface CategoriesTabProps {
   categories: string[];
   setCategories: (categories: string[]) => void;
-  toast: any;
+  toast: ToastFn;
 }
 
 const CategoriesTab: React.FC<CategoriesTabProps> = ({

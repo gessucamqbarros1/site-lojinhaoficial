@@ -4,16 +4,18 @@ import PhoneInput from './PhoneInput';
 import LogoUpload from './LogoUpload';
 import BannerUpload from './BannerUpload';
 import ThemeSelector from './ThemeSelector';
+import { StoreData } from '@/hooks/useAdminData';
+import { ToastFn } from '@/hooks/use-toast';
 
 interface SettingsTabProps {
-  storeData: any;
-  setStoreData: (data: any) => void;
+  storeData: StoreData;
+  setStoreData: (data: StoreData) => void;
   uploading: boolean;
   setUploading: (uploading: boolean) => void;
   saving: boolean;
   setSaving: (saving: boolean) => void;
   fetchStoreSettings: () => Promise<void>;
-  toast: any;
+  toast: ToastFn;
 }
 
 const SettingsTab: React.FC<SettingsTabProps> = ({

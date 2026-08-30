@@ -41,7 +41,7 @@ const Navbar = () => {
           console.log('Navbar: Setting store name to:', settings.name);
           console.log('Navbar: Setting logo to:', settings.logo);
           // Sempre aplica cache busting na logo (evita logo antiga aparecer após atualização)
-          let finalLogo = settings.logo
+          const finalLogo = settings.logo
             ? (settings.logo.startsWith('https://tvxsvgtqplxypukvjoqf.supabase.co/') 
                 ? settings.logo + `?t=${Date.now()}`
                 : settings.logo)

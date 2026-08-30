@@ -137,7 +137,8 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+export type Toast = Omit<ToasterToast, "id">
+export type ToastFn = (props: Toast) => ReturnType<typeof toast>
 
 function toast({ ...props }: Toast) {
   const id = genId()

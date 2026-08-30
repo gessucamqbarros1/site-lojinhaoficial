@@ -5,6 +5,7 @@ import ProductList from './ProductList';
 import ProductForm from './ProductForm';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadProductImage, deleteProductImage, uploadMultipleProductImages, deleteMultipleProductImages } from '@/lib/fileUploader';
+import { ToastFn } from '@/hooks/use-toast';
 
 interface ProductsTabProps {
   productList: Product[];
@@ -16,7 +17,7 @@ interface ProductsTabProps {
   setUploading: (uploading: boolean) => void;
   saving: boolean;
   setSaving: (saving: boolean) => void;
-  toast: any;
+  toast: ToastFn;
 }
 
 const ProductsTab: React.FC<ProductsTabProps> = ({

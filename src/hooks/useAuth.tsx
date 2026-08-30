@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -81,11 +82,11 @@ export const useAuth = () => {
       });
 
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup error:', error);
       toast({
         title: "Erro no cadastro",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
       return { data: null, error };
@@ -110,11 +111,11 @@ export const useAuth = () => {
       });
 
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signin error:', error);
       toast({
         title: "Erro de login",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
       return { data: null, error };
@@ -132,11 +133,11 @@ export const useAuth = () => {
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signout error:', error);
       toast({
         title: "Erro no logout",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     }

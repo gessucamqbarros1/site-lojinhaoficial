@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
 import { uploadProductImage, deleteProductImage } from '@/lib/fileUploader';
+import { ToastFn } from '@/hooks/use-toast';
 
 interface BannerUploadProps {
   bannerUrl: string;
@@ -9,7 +10,7 @@ interface BannerUploadProps {
   onBannerUrlChange: (url: string) => void;
   uploading: boolean;
   setUploading: (uploading: boolean) => void;
-  toast: any;
+  toast: ToastFn;
 }
 
 const BannerUpload: React.FC<BannerUploadProps> = ({

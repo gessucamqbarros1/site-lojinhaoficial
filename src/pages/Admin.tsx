@@ -39,6 +39,9 @@ const Admin = () => {
       fetchProducts();
       fetchStoreSettings();
     }
+    // fetchProducts/fetchStoreSettings come from useAdminData() and aren't
+    // memoized, so including them here would refetch on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isAdmin]);
 
   const handleLogout = async () => {

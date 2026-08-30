@@ -3,7 +3,7 @@ import { Product } from '@/components/ui/ProductCard';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-interface StoreData {
+export interface StoreData {
   name: string;
   logo: string;
   banner: string;
