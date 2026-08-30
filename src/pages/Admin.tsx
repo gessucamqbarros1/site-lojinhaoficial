@@ -149,7 +149,7 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-vintage-background flex relative">
+    <div className="admin-panel min-h-screen bg-vintage-background flex relative">
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(true)}

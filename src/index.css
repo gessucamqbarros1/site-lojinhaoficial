@@ -290,7 +290,34 @@
   .vintage-button-outline:hover::before {
     width: 100%;
   }
-  
+
+  /* The vintage-* classes were designed for the public storefront (product
+     cards, CTAs) with pronounced lift/tilt/scale hover effects. Reused as-is
+     inside the admin panel, that made every card and secondary button in
+     Products/Categories/Settings/Backup visibly jump on hover — distracting
+     in a data-management UI. Neutralize those effects specifically within
+     .admin-panel without touching the storefront. */
+  .admin-panel .vintage-card,
+  .admin-panel .vintage-button,
+  .admin-panel .vintage-button-secondary,
+  .admin-panel .vintage-button-outline {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .admin-panel .vintage-card:hover,
+  .admin-panel .vintage-button:hover,
+  .admin-panel .vintage-button-secondary:hover,
+  .admin-panel .vintage-button-outline:hover {
+    transform: none;
+    box-shadow: var(--theme-card-shadow) !important;
+  }
+
+  .admin-panel .vintage-card::before,
+  .admin-panel .vintage-button::before,
+  .admin-panel .vintage-button-outline::before {
+    display: none;
+  }
+
   .vintage-divider {
     height: 2px;
     width: 100%;
