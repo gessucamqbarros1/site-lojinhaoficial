@@ -1,23 +1,73 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import ProductGrid from '@/components/home/ProductGrid';
 import { Button } from '@/components/ui/button';
 import { LogOut, Package, Heart, User as UserIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import ProductSkeleton from '@/components/ui/ProductSkeleton';
+import { Product } from '@/components/ui/ProductCard';
 
 const Account = () => {
   const { user, signOut, loading: authLoading } = useAuth();
+  const { favorites, loading: favoritesLoading } = useFavorites();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'orders' | 'favorites'>('orders');
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
+  const [loadingFavoriteProducts, setLoadingFavoriteProducts] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login', { replace: true });
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (favoritesLoading) return;
+
+    if (favorites.length === 0) {
+      setFavoriteProducts([]);
+      setLoadingFavoriteProducts(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingFavoriteProducts(true);
+
+    supabase
+      .from('products')
+      .select('*')
+      .in('id', favorites.map(Number))
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.error('Error loading favorite products:', error);
+          setFavoriteProducts([]);
+        } else {
+          setFavoriteProducts(
+            (data ?? []).map((p) => ({
+              id: p.id.toString(),
+              name: p.name,
+              description: p.description,
+              price: parseFloat(p.price.toString()),
+              original_price: p.original_price ? parseFloat(p.original_price.toString()) : undefined,
+              discount_percentage: p.discount_percentage ?? undefined,
+              image: p.image || '/placeholder.svg',
+              images: Array.isArray(p.images) ? p.images.filter((img): img is string => typeof img === 'string') : [],
+              category: p.category || '',
+              purchaseLink: p.purchase_link || undefined,
+            }))
+          );
+        }
+        setLoadingFavoriteProducts(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [favorites, favoritesLoading]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -90,9 +140,9 @@ const Account = () => {
               </button>
             </div>
 
-            <div className="p-6 md:p-8 min-h-[300px]">
+            <div className="min-h-[300px]">
               {activeTab === 'orders' ? (
-                <div className="text-center py-12">
+                <div className="text-center py-12 p-6 md:p-8">
                   <Package size={48} className="mx-auto text-vintage-beige mb-4" />
                   <h3 className="text-xl font-playfair text-vintage-brown mb-2">Nenhum pedido ainda</h3>
                   <p className="text-vintage-dark/70 mb-6">Você ainda não realizou nenhuma compra conosco.</p>
@@ -100,8 +150,10 @@ const Account = () => {
                     Ver Produtos
                   </Button>
                 </div>
-              ) : (
-                <div className="text-center py-12">
+              ) : loadingFavoriteProducts || favoritesLoading ? (
+                <ProductGrid products={[]} loading title={undefined} />
+              ) : favoriteProducts.length === 0 ? (
+                <div className="text-center py-12 p-6 md:p-8">
                   <Heart size={48} className="mx-auto text-vintage-beige mb-4" />
                   <h3 className="text-xl font-playfair text-vintage-brown mb-2">Sem favoritos</h3>
                   <p className="text-vintage-dark/70 mb-6">Você ainda não salvou nenhum produto como favorito.</p>
@@ -109,6 +161,8 @@ const Account = () => {
                     Explorar Produtos
                   </Button>
                 </div>
+              ) : (
+                <ProductGrid products={favoriteProducts} loading={false} />
               )}
             </div>
           </div>
