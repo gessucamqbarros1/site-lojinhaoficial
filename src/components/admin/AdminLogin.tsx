@@ -5,27 +5,18 @@ import { useAuth } from '@/hooks/useAuth';
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const { signIn, signUp, loading } = useAuth();
+  const { signIn, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignUp) {
-      if (password !== confirmPassword) {
-        return;
-      }
-      await signUp(email, password);
-    } else {
-      await signIn(email, password);
-    }
+    await signIn(email, password);
   };
 
   return (
     <div className="py-12">
       <div className="max-w-md mx-auto admin-card p-8">
         <h1 className="text-2xl font-playfair text-vintage-brown mb-6 text-center">
-          {isSignUp ? 'Criar Conta' : 'Acesso Administrativo'}
+          Acesso Administrativo
         </h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -56,44 +47,17 @@ const AdminLogin: React.FC = () => {
               required
             />
           </div>
-          {isSignUp && (
-            <div className="mb-4">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-vintage-dark mb-1">
-                Confirmar Senha
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="vintage-input w-full"
-                placeholder="Confirme sua senha"
-                required
-              />
-              {password !== confirmPassword && confirmPassword && (
-                <p className="text-xs text-red-600 mt-1">
-                  As senhas não coincidem
-                </p>
-              )}
-            </div>
-          )}
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="admin-button w-full py-2 mb-4"
-            disabled={loading || (isSignUp && password !== confirmPassword)}
+            disabled={loading}
           >
-            {loading ? 'Carregando...' : (isSignUp ? 'Criar Conta' : 'Entrar')}
+            {loading ? 'Carregando...' : 'Entrar'}
           </button>
         </form>
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-vintage-brown hover:underline"
-          >
-            {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem conta? Cadastre-se'}
-          </button>
-        </div>
+        <p className="text-xs text-vintage-dark/60 text-center">
+          Contas de administrador são criadas manualmente. Fale com quem gerencia a loja se precisar de acesso.
+        </p>
       </div>
     </div>
   );

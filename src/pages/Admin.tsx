@@ -11,7 +11,7 @@ import SettingsTab from '@/components/admin/SettingsTab';
 import BackupTab from '@/components/admin/BackupTab';
 
 const Admin = () => {
-  const { user, signOut } = useAuth();
+  const { user, loading, isAdmin, roleLoading, signOut } = useAuth();
   const {
     storeData,
     setStoreData,
@@ -35,11 +35,11 @@ const Admin = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && isAdmin) {
       fetchProducts();
       fetchStoreSettings();
     }
-  }, [user]);
+  }, [user, isAdmin]);
 
   const handleLogout = async () => {
     try {
@@ -58,8 +58,32 @@ const Admin = () => {
     }
   };
 
+  if (loading || (user && roleLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-vintage-background">
+        <p className="text-vintage-brown">Carregando...</p>
+      </div>
+    );
+  }
+
   if (!user) {
     return <AdminLogin />;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-vintage-background px-4">
+        <div className="admin-card p-8 max-w-md text-center">
+          <h1 className="text-2xl font-playfair text-vintage-brown mb-3">Acesso negado</h1>
+          <p className="text-vintage-dark/80 mb-6">
+            Sua conta está autenticada, mas não tem permissão de administrador nesta loja.
+          </p>
+          <button onClick={signOut} className="admin-button py-2 px-4">
+            Sair
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const renderActiveTab = () => {
