@@ -30,7 +30,7 @@ const Product = () => {
         const { data, error } = await supabase
           .from('products')
           .select('*')
-          .eq('id', id)
+          .eq('id', Number(id))
           .single();
           
         if (error) {
@@ -74,7 +74,7 @@ const Product = () => {
             .from('products')
             .select('*')
             .eq('category', data.category)
-            .neq('id', id)
+            .neq('id', Number(id))
             .limit(4);
             
           if (suggestedError) {

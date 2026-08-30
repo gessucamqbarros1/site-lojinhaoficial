@@ -133,7 +133,7 @@ const BackupTab: React.FC<BackupTabProps> = ({
       const { error } = await supabase
         .from('products')
         .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000');
+        .gte('id', 0);
       
       if (error) {
         throw error;

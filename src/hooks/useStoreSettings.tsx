@@ -11,7 +11,7 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
 };
 
 interface StoreSettings {
-  id?: string;
+  id?: number;
   name: string;
   logo: string;
   banner: string;

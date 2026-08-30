@@ -12,58 +12,50 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
-      coupons: {
-        Row: {
-          active: boolean
-          code: string
-          created_at: string
-          discount_percentage: number
-          expires_at: string | null
-          id: string
-          max_uses: number | null
-          used_count: number
-        }
-        Insert: {
-          active?: boolean
-          code: string
-          created_at?: string
-          discount_percentage?: number
-          expires_at?: string | null
-          id?: string
-          max_uses?: number | null
-          used_count?: number
-        }
-        Update: {
-          active?: boolean
-          code?: string
-          created_at?: string
-          discount_percentage?: number
-          expires_at?: string | null
-          id?: string
-          max_uses?: number | null
-          used_count?: number
-        }
-        Relationships: []
-      }
       favorites: {
         Row: {
           created_at: string
-          id: string
-          product_id: string
+          id: number
+          product_id: number
           user_id: string
         }
         Insert: {
           created_at?: string
-          id?: string
-          product_id: string
+          id?: number
+          product_id: number
           user_id: string
         }
         Update: {
           created_at?: string
-          id?: string
-          product_id?: string
+          id?: number
+          product_id?: number
           user_id?: string
         }
         Relationships: [
@@ -74,51 +66,37 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      newsletter_subscribers: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-        }
-        Relationships: []
       }
       order_items: {
         Row: {
           created_at: string
-          id: string
-          order_id: string
-          product_id: string | null
-          product_name: string
+          id: number
+          order_id: number
+          product_id: number
           quantity: number
           unit_price: number
         }
         Insert: {
           created_at?: string
-          id?: string
-          order_id: string
-          product_id?: string | null
-          product_name: string
+          id?: number
+          order_id: number
+          product_id: number
           quantity?: number
-          unit_price?: number
+          unit_price: number
         }
         Update: {
           created_at?: string
-          id?: string
-          order_id?: string
-          product_id?: string | null
-          product_name?: string
+          id?: number
+          order_id?: number
+          product_id?: number
           quantity?: number
           unit_price?: number
         }
@@ -141,111 +119,83 @@ export type Database = {
       }
       orders: {
         Row: {
-          address: string | null
-          coupon_code: string | null
           created_at: string
-          customer_email: string | null
-          customer_name: string
-          customer_phone: string | null
-          discount: number
-          id: string
-          notes: string | null
+          id: number
           status: string
-          subtotal: number
-          total: number
-          updated_at: string
-          user_id: string | null
+          stripe_session_id: string | null
+          total_amount: number
+          user_id: string
         }
         Insert: {
-          address?: string | null
-          coupon_code?: string | null
           created_at?: string
-          customer_email?: string | null
-          customer_name: string
-          customer_phone?: string | null
-          discount?: number
-          id?: string
-          notes?: string | null
+          id?: number
           status?: string
-          subtotal?: number
-          total?: number
-          updated_at?: string
-          user_id?: string | null
+          stripe_session_id?: string | null
+          total_amount: number
+          user_id: string
         }
         Update: {
-          address?: string | null
-          coupon_code?: string | null
           created_at?: string
-          customer_email?: string | null
-          customer_name?: string
-          customer_phone?: string | null
-          discount?: number
-          id?: string
-          notes?: string | null
+          id?: number
           status?: string
-          subtotal?: number
-          total?: number
-          updated_at?: string
-          user_id?: string | null
+          stripe_session_id?: string | null
+          total_amount?: number
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
-          category: string | null
+          category: string
           created_at: string
-          description: string | null
+          description: string
           discount_percentage: number | null
-          id: string
+          id: number
           image: string | null
-          images: string[] | null
+          images: Json | null
           name: string
           original_price: number | null
           price: number
           purchase_link: string | null
-          seo_description: string | null
-          seo_title: string | null
-          slug: string | null
           stock: number
-          track_stock: boolean
           updated_at: string
         }
         Insert: {
-          category?: string | null
+          category: string
           created_at?: string
-          description?: string | null
+          description: string
           discount_percentage?: number | null
-          id?: string
+          id?: number
           image?: string | null
-          images?: string[] | null
+          images?: Json | null
           name: string
           original_price?: number | null
-          price?: number
+          price: number
           purchase_link?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
-          slug?: string | null
           stock?: number
-          track_stock?: boolean
           updated_at?: string
         }
         Update: {
-          category?: string | null
+          category?: string
           created_at?: string
-          description?: string | null
+          description?: string
           discount_percentage?: number | null
-          id?: string
+          id?: number
           image?: string | null
-          images?: string[] | null
+          images?: Json | null
           name?: string
           original_price?: number | null
           price?: number
           purchase_link?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
-          slug?: string | null
           stock?: number
-          track_stock?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -254,54 +204,48 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          email: string
           full_name: string | null
           id: string
-          phone: string | null
-          updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email: string
           full_name?: string | null
           id: string
-          phone?: string | null
-          updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email?: string
           full_name?: string | null
           id?: string
-          phone?: string | null
-          updated_at?: string
         }
         Relationships: []
       }
       reviews: {
         Row: {
-          author_name: string
           comment: string | null
           created_at: string
-          id: string
-          product_id: string
+          id: number
+          product_id: number
           rating: number
           user_id: string
         }
         Insert: {
-          author_name?: string
           comment?: string | null
           created_at?: string
-          id?: string
-          product_id: string
+          id?: number
+          product_id: number
           rating: number
           user_id: string
         }
         Update: {
-          author_name?: string
           comment?: string | null
           created_at?: string
-          id?: string
-          product_id?: string
+          id?: number
+          product_id?: number
           rating?: number
           user_id?: string
         }
@@ -313,6 +257,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       store_settings: {
@@ -322,7 +273,7 @@ export type Database = {
           about_text: string | null
           banner: string | null
           created_at: string
-          id: string
+          id: number
           instagram_link: string | null
           logo: string | null
           name: string | null
@@ -337,7 +288,7 @@ export type Database = {
           about_text?: string | null
           banner?: string | null
           created_at?: string
-          id?: string
+          id?: number
           instagram_link?: string | null
           logo?: string | null
           name?: string | null
@@ -352,7 +303,7 @@ export type Database = {
           about_text?: string | null
           banner?: string | null
           created_at?: string
-          id?: string
+          id?: number
           instagram_link?: string | null
           logo?: string | null
           name?: string | null
@@ -524,6 +475,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "user"],

@@ -73,7 +73,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
       const { error } = await supabase
         .from('products')
         .update(productData)
-        .eq('id', editingProduct.id);
+        .eq('id', Number(editingProduct.id));
       
       if (error) {
         throw error;
@@ -111,7 +111,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
       const { error } = await supabase
         .from('products')
         .delete()
-        .eq('id', id);
+        .eq('id', Number(id));
       
       if (error) {
         throw error;
@@ -217,7 +217,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
         result = await supabase
           .from('products')
           .update(productData)
-          .eq('id', editingProduct.id);
+          .eq('id', Number(editingProduct.id));
       } else {
         result = await supabase
           .from('products')
